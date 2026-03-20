@@ -28,7 +28,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--pvc",
-        default=os.environ.get("ST4SD_INPUT_PVC", "md-simulation-inputs-pvc"),
+        default=os.environ.get("ST4SD_INPUT_PVC", "md-simulation-inputs-pvc-rwx"),
         help="PVC containing the LAMMPS input file (default: %(default)s)",
     )
     parser.add_argument(
@@ -43,7 +43,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--target-file",
-        default=os.environ.get("ST4SD_TARGET_FILE", "input.file.in"),
+        default=os.environ.get("ST4SD_TARGET_FILE", "file.in"),
         help="Target input filename for the experiment (default: %(default)s)",
     )
     parser.add_argument(
@@ -53,7 +53,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--confin-target",
-        default=os.environ.get("ST4SD_CONFIN_TARGET", "input.confin.data"),
+        default=os.environ.get("ST4SD_CONFIN_TARGET", "confin.data"),
         help="Target confin.data filename for the experiment (default: %(default)s)",
     )
     args = parser.parse_args()
