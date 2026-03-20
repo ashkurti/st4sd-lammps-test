@@ -7,6 +7,8 @@ entrypoint:
         lammps-gpus: "1"
         input.file.in: input/file.in
         input.confin.data: input/confin.data
+        ld-library-path: /usr/local/lammps/sm80/lib:/usr/local/cuda/lib:/usr/local/cuda/lib64:/usr/local/fftw/lib
+        path-env: /usr/local/lammps/bin:/usr/local/lammps/sm80/bin:/usr/local/openmpi/bin:/usr/local/ucx/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 workflows:
   - signature:
@@ -16,6 +18,10 @@ workflows:
         - name: input.confin.data
         - name: lammps-cpus
         - name: lammps-gpus
+        - name: ld-library-path
+          default: /usr/local/lammps/sm80/lib:/usr/local/cuda/lib:/usr/local/cuda/lib64:/usr/local/fftw/lib
+        - name: path-env
+          default: /usr/local/lammps/bin:/usr/local/lammps/sm80/bin:/usr/local/openmpi/bin:/usr/local/ucx/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     steps:
       lammps: lammps-single-file
     execute:
@@ -25,6 +31,8 @@ workflows:
           file.confin: "%(input.confin.data)s:ref"
           cpus: "%(lammps-cpus)s"
           gpus: "%(lammps-gpus)s"
+          ld-library-path: "%(ld-library-path)s"
+          path-env: "%(path-env)s"
 
 components:
   - signature:
@@ -34,6 +42,10 @@ components:
         - name: gpus
         - name: file.in
         - name: file.confin
+        - name: ld-library-path
+          default: /usr/local/lammps/sm80/lib:/usr/local/cuda/lib:/usr/local/cuda/lib64:/usr/local/fftw/lib
+        - name: path-env
+          default: /usr/local/lammps/bin:/usr/local/lammps/sm80/bin:/usr/local/openmpi/bin:/usr/local/ucx/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     command:
       executable: bash
       arguments: |
@@ -44,13 +56,17 @@ components:
           readonly gpu_count=${1:-$(nvidia-smi --list-gpus | wc -l)}
           export INPUT_FILE=file.in
           echo \"Running LAMMPS on ${gpu_count} GPUs...\"
+          echo \"PATH=${PATH}\"
+          echo \"LD_LIBRARY_PATH=${LD_LIBRARY_PATH}\"
+          which lmp_gpu || true
+          find /usr/local -name lmp_gpu 2>/dev/null || true
           lmp_gpu -h | grep KOKKOS
           mpirun -np ${gpu_count} lmp_gpu -sf gpu -pk gpu ${gpu_count} -in ${INPUT_FILE}
         "
       expandArguments: none
       environment:
-        LD_LIBRARY_PATH: /usr/local/lammps/sm80/lib:/usr/local/cuda/lib:/usr/local/cuda/lib64:/usr/local/fftw/lib
-        PATH: /usr/local/lammps/sm80/bin:/usr/local/openmpi/bin:/usr/local/ucx/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        LD_LIBRARY_PATH: "%(ld-library-path)s"
+        PATH: "%(path-env)s"
     resourceManager:
       config:
         backend: kubernetes
