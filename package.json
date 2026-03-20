@@ -1,0 +1,43 @@
+{
+  "base": {
+    "packages": [
+      {
+        "name": "st4sd-lammps-test",
+        "source": {
+          "local": {
+            "location": "."
+          }
+        },
+        "config": {
+          "path": "conf/dsl.yaml"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "package": {
+      "name": "st4sd-lammps-test",
+      "tags": ["LAMMPS", "MD", "test"],
+      "keywords": ["molecular dynamics", "single file", "PVC"],
+      "description": "Minimal DSL2 ST4SD LAMMPS experiment using a single input file from a PVC"
+    }
+  },
+  "parameterisation": {
+    "executionOptions": {
+      "variables": [
+        {
+          "name": "lammps-cpus",
+          "value": "1"
+        },
+        {
+          "name": "lammps-gpus",
+          "value": "1"
+        },
+        {
+          "name": "lammps-bin_size",
+          "value": "2.8"
+        }
+      ]
+    }
+  }
+}

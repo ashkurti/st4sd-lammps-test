@@ -1,0 +1,59 @@
+entrypoint:
+  entry-instance: "lammps"
+  execute:
+    - target: <entry-instance>
+      args:
+        lammps-cpus: "1"
+        lammps-gpus: "1"
+        input.file.in: input/input.file.in
+
+workflows:
+  - signature:
+      name: lammps
+      parameters:
+        - name: input.file.in
+        - name: lammps-cpus
+        - name: lammps-gpus
+        - name: lammps-bin_size
+          default: "2.8"
+    steps:
+      lammps: lammps-single-file
+    execute:
+      - target: <lammps>
+        args:
+          file.in: "%(input.file.in)s:ref"
+          cpus: "%(lammps-cpus)s"
+          gpus: "%(lammps-gpus)s"
+          bin_size: "%(lammps-bin_size)s"
+
+components:
+  - signature:
+      name: lammps-single-file
+      parameters:
+        - name: cpus
+        - name: gpus
+        - name: file.in
+        - name: bin_size
+          default: "2.8"
+    command:
+      executable: bash
+      arguments: |
+        -c "
+          set -euo pipefail
+          cp %(file.in)s .
+          mpirun -n %(gpus)s lmp -k on g %(gpus)s -sf kk -pk kokkos cuda/aware on neigh full comm device \
+            binsize %(bin_size)s -in $(basename %(file.in)s:ref)
+        "
+      expandArguments: none
+      environment:
+        LD_LIBRARY_PATH: /usr/local/lammps/sm80/lib:/usr/local/cuda/lib:/usr/local/cuda/lib64:/usr/local/fftw/lib
+        PATH: /usr/local/lammps/sm80/bin:/usr/local/openmpi/bin:/usr/local/ucx/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    resourceManager:
+      config:
+        backend: kubernetes
+      kubernetes:
+        image: hartreeworkflowsolutions.azurecr.io/stfc_lammps_custom_gpu_mat_chem:latest
+        image-pull-secret: pull-acr-hartree-workflowsolutions-secret
+    resourceRequest:
+      numberThreads: "%(cpus)s"
+      gpus: "%(gpus)s"
