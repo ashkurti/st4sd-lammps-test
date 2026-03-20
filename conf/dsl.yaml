@@ -5,8 +5,8 @@ entrypoint:
       args:
         lammps-cpus: "1"
         lammps-gpus: "1"
-        input.file.in: input/input.file.in
-        input.confin.data: input/input.confin.data
+        input.file.in: input/file.in
+        input.confin.data: input/confin.data
 
 workflows:
   - signature:
@@ -44,10 +44,10 @@ components:
       arguments: |
         -c "
           set -euo pipefail
-          cp %(file.in)s .
-          cp %(file.confin)s .
+          cp %(file.in)s file.in
+          cp %(file.confin)s confin.data
           mpirun -n %(gpus)s lmp -k on g %(gpus)s -sf kk -pk kokkos cuda/aware on neigh full comm device \
-            binsize %(bin_size)s -in $(basename %(file.in)s:ref)
+            binsize %(bin_size)s -in file.in
         "
       expandArguments: none
       environment:
