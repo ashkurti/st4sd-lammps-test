@@ -6,12 +6,14 @@ entrypoint:
         lammps-cpus: "1"
         lammps-gpus: "1"
         input.file.in: input/input.file.in
+        input.confin.data: input/input.confin.data
 
 workflows:
   - signature:
       name: lammps
       parameters:
         - name: input.file.in
+        - name: input.confin.data
         - name: lammps-cpus
         - name: lammps-gpus
         - name: lammps-bin_size
@@ -22,6 +24,7 @@ workflows:
       - target: <lammps>
         args:
           file.in: "%(input.file.in)s:ref"
+          file.confin: "%(input.confin.data)s:ref"
           cpus: "%(lammps-cpus)s"
           gpus: "%(lammps-gpus)s"
           bin_size: "%(lammps-bin_size)s"
@@ -33,6 +36,7 @@ components:
         - name: cpus
         - name: gpus
         - name: file.in
+        - name: file.confin
         - name: bin_size
           default: "2.8"
     command:
@@ -41,6 +45,7 @@ components:
         -c "
           set -euo pipefail
           cp %(file.in)s .
+          cp %(file.confin)s .
           mpirun -n %(gpus)s lmp -k on g %(gpus)s -sf kk -pk kokkos cuda/aware on neigh full comm device \
             binsize %(bin_size)s -in $(basename %(file.in)s:ref)
         "

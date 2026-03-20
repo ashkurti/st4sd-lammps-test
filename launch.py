@@ -46,6 +46,16 @@ def main() -> None:
         default=os.environ.get("ST4SD_TARGET_FILE", "input.file.in"),
         help="Target input filename for the experiment (default: %(default)s)",
     )
+    parser.add_argument(
+        "--confin-source",
+        default=os.environ.get("ST4SD_CONFIN_SOURCE", "confin.data"),
+        help="Path to confin.data relative to the root of the PVC (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--confin-target",
+        default=os.environ.get("ST4SD_CONFIN_TARGET", "input.confin.data"),
+        help="Target confin.data filename for the experiment (default: %(default)s)",
+    )
     args = parser.parse_args()
 
     api = experiment.service.db.ExperimentRestAPI(
@@ -58,6 +68,11 @@ def main() -> None:
             {
                 "sourceFilename": args.source_file,
                 "targetFilename": args.target_file,
+                "volume": args.volume_identifier,
+            },
+            {
+                "sourceFilename": args.confin_source,
+                "targetFilename": args.confin_target,
                 "volume": args.volume_identifier,
             }
         ],
