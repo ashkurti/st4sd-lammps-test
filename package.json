@@ -32,10 +32,6 @@
         {
           "name": "lammps-gpus",
           "value": "1"
-        },
-        {
-          "name": "lammps-bin_size",
-          "value": "2.8"
         }
       ]
     }

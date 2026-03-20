@@ -16,8 +16,6 @@ workflows:
         - name: input.confin.data
         - name: lammps-cpus
         - name: lammps-gpus
-        - name: lammps-bin_size
-          default: "2.8"
     steps:
       lammps: lammps-single-file
     execute:
@@ -27,7 +25,6 @@ workflows:
           file.confin: "%(input.confin.data)s:ref"
           cpus: "%(lammps-cpus)s"
           gpus: "%(lammps-gpus)s"
-          bin_size: "%(lammps-bin_size)s"
 
 components:
   - signature:
@@ -37,8 +34,6 @@ components:
         - name: gpus
         - name: file.in
         - name: file.confin
-        - name: bin_size
-          default: "2.8"
     command:
       executable: bash
       arguments: |
@@ -46,8 +41,11 @@ components:
           set -euo pipefail
           cp %(file.in)s file.in
           cp %(file.confin)s confin.data
-          mpirun -n %(gpus)s lmp -k on g %(gpus)s -sf kk -pk kokkos cuda/aware on neigh full comm device \
-            binsize %(bin_size)s -in file.in
+          readonly gpu_count=${1:-$(nvidia-smi --list-gpus | wc -l)}
+          export INPUT_FILE=file.in
+          echo \"Running LAMMPS on ${gpu_count} GPUs...\"
+          lmp_gpu -h | grep KOKKOS
+          mpirun -np ${gpu_count} lmp_gpu -sf gpu -pk gpu ${gpu_count} -in ${INPUT_FILE}
         "
       expandArguments: none
       environment:
